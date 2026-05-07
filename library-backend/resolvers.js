@@ -1,6 +1,8 @@
 const Author = require('./models/author')
 const Book = require('./models/book')
+const User = require('./models/user')
 const { GraphQLError } = require('graphql')
+const jwt = require('jsonwebtoken')
 
 const mongooseErrorToGraphQLError = (error, invalidArgs) => {
   if (error?.name === 'ValidationError') {
@@ -41,6 +43,7 @@ const resolvers = {
   Query: {
     bookCount: async () => Book.countDocuments({}),
     authorCount: async () => Author.countDocuments({}),
+    me: (root, args, context) => context.currentUser,
 
     allBooks: async (root, args) => {
       const filter = {}
@@ -78,7 +81,15 @@ const resolvers = {
   },
 
   Mutation: {
-    addBook: async (root, args) => {
+    addBook: async (root, args, context) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'UNAUTHENTICATED',
+          },
+        })
+      }
+
       try {
         let author = await Author.findOne({ name: args.author })
 
@@ -100,7 +111,15 @@ const resolvers = {
       }
     },
 
-    editAuthor: async (root, args) => {
+    editAuthor: async (root, args, context) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('not authenticated', {
+          extensions: {
+            code: 'UNAUTHENTICATED',
+          },
+        })
+      }
+
       try {
         const authorToEdit = await Author.findOne({ name: args.name })
 
@@ -113,6 +132,34 @@ const resolvers = {
       } catch (error) {
         throw mongooseErrorToGraphQLError(error, args)
       }
+    },
+
+    createUser: async (root, args) => {
+      try {
+        const user = new User({ ...args })
+        return await user.save()
+      } catch (error) {
+        throw mongooseErrorToGraphQLError(error, args)
+      }
+    },
+
+    login: async (root, args) => {
+      const user = await User.findOne({ username: args.username })
+
+      if (!user || args.password !== 'secret') {
+        throw new GraphQLError('wrong credentials', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+          },
+        })
+      }
+
+      const userForToken = {
+        username: user.username,
+        id: user._id,
+      }
+
+      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) }
     },
   },
 
