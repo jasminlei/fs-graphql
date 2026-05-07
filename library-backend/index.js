@@ -1,5 +1,6 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
+const { randomUUID } = require('node:crypto')
 
 let authors = [
   {
@@ -161,7 +162,7 @@ const resolvers = {
 
   Mutation: {
     addBook: (root, args) => {
-      const book = { ...args }
+      const book = { ...args, id: randomUUID() }
       books = books.concat(book)
 
       const authorExists = authors.some((a) => a.name === book.author)
@@ -169,7 +170,7 @@ const resolvers = {
       if (!authorExists) {
         authors = authors.concat({
           name: book.author,
-          id: String(Date.now()),
+          id: randomUUID(),
           born: null,
         })
       }
