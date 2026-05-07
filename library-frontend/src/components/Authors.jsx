@@ -1,28 +1,6 @@
-import { gql } from '@apollo/client'
 import { useMutation, useQuery } from '@apollo/client/react'
-
 import { useState } from 'react'
-
-const ALL_AUTHORS = gql`
-  query {
-    allAuthors {
-      name
-      born
-      bookCount
-      id
-    }
-  }
-`
-
-const EDIT_AUTHOR = gql`
-  mutation EditAuthor($name: String!, $setBornTo: Int!) {
-    editAuthor(name: $name, setBornTo: $setBornTo) {
-      name
-      born
-      id
-    }
-  }
-`
+import { ALL_AUTHORS, EDIT_AUTHOR } from '../queries'
 
 const Authors = (props) => {
   const [name, setName] = useState('')
@@ -38,7 +16,7 @@ const Authors = (props) => {
   })
 
   const authors = result.data?.allAuthors ?? []
-  const selectedName = name || ''
+  const selectedName = name || authors[0]?.name || ''
 
   if (!props.show) {
     return null
