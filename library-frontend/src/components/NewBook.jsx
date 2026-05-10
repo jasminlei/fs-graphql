@@ -17,6 +17,10 @@ const NewBook = (props) => {
     return null
   }
 
+  if (!props.token) {
+    return <div>log in to add books</div>
+  }
+
   const submit = async (event) => {
     event.preventDefault()
 
