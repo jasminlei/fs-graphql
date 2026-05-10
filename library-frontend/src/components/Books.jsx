@@ -18,19 +18,15 @@ const Books = (props) => {
   const handleSelectGenre = async (genre) => {
     setSelectedGenre(genre)
 
-    await allBooksResult.refetch?.({ genre: null })
-
     if (genre !== null) {
       fetchFilteredBooks({ variables: { genre } })
     }
+
+    await allBooksResult.refetch?.({ genre: null })
   }
 
   if (!props.show) {
     return null
-  }
-
-  if (allBooksResult.loading || filteredBooksResult.loading) {
-    return <div>loading...</div>
   }
 
   if (allBooksResult.error) {
@@ -44,6 +40,11 @@ const Books = (props) => {
   const unfilteredBooks = allBooksResult.data?.allBooks ?? []
   const genres = [...new Set(unfilteredBooks.flatMap((b) => b.genres))]
 
+  const isFiltered = selectedGenre !== null
+  const booksLoading = isFiltered
+    ? filteredBooksResult.loading
+    : allBooksResult.loading
+
   const books =
     selectedGenre === null
       ? unfilteredBooks
@@ -53,22 +54,28 @@ const Books = (props) => {
     <div>
       <h2>books</h2>
 
-      <table>
-        <tbody>
-          <tr>
-            <th></th>
-            <th>author</th>
-            <th>published</th>
-          </tr>
-          {books.map((a) => (
-            <tr key={a.id}>
-              <td>{a.title}</td>
-              <td>{a.author?.name}</td>
-              <td>{a.published}</td>
+      {selectedGenre ? <div>in genre {selectedGenre}</div> : null}
+
+      {booksLoading ? (
+        <div>loading...</div>
+      ) : (
+        <table>
+          <tbody>
+            <tr>
+              <th></th>
+              <th>author</th>
+              <th>published</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+            {books.map((a) => (
+              <tr key={a.id}>
+                <td>{a.title}</td>
+                <td>{a.author?.name}</td>
+                <td>{a.published}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <div>
         {genres.map((g) => (

@@ -69,7 +69,7 @@ const Authors = (props) => {
 
       {props.token ? (
         <>
-          <h3>set birthyear</h3>
+          <h3>Set birthyear</h3>
           <form onSubmit={submit}>
             <div>
               <label htmlFor='name'>name</label>

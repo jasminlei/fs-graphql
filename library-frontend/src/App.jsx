@@ -29,6 +29,8 @@ const App = () => {
     setPage('authors')
   }
 
+  const activePage = token && page === 'login' ? 'books' : page
+
   return (
     <div>
       <Notify errorMessage={errorMessage} />
@@ -41,7 +43,7 @@ const App = () => {
           <>
             <button onClick={() => setPage('add')}>add book</button>
             <button onClick={() => setPage('recommendations')}>
-              recommendations
+              recommend
             </button>
             <button onClick={logout}>logout</button>
           </>
@@ -52,19 +54,20 @@ const App = () => {
 
       <div>
         <LoginForm
-          show={page === 'login'}
+          show={activePage === 'login'}
           setToken={setToken}
           setError={notify}
+          onSuccess={() => setPage('books')}
         />
       </div>
 
-      <Authors show={page === 'authors'} token={token} />
+      <Authors show={activePage === 'authors'} token={token} />
 
-      <Books show={page === 'books'} />
+      <Books show={activePage === 'books'} />
 
-      <Recommendations show={page === 'recommendations'} />
+      <Recommendations show={activePage === 'recommendations'} />
 
-      {token ? <NewBook show={page === 'add'} token={token} /> : null}
+      {token ? <NewBook show={activePage === 'add'} token={token} /> : null}
     </div>
   )
 }
